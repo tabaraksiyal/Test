@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="JetDigitizer: fast embroidery digitizing, vector tracing, screen printing and graphic design, with your own dedicated digitizer and 24/7 live support.">
+<!--ARTIFACT-START-->
+<title>JetDigitizer Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky bar, split hero with a before/after stitch slider, then full-width bands
+   separated by dashed "running stitch" rules. Accent (thread orange) is reserved for actions. */
+:root {
+  --bg: #F6F5F1;          /* fabric off-white */
+  --surface: #FFFFFF;
+  --ink: #0B1B3F;         /* jet navy */
+  --muted: #545E74;
+  --line: #D9D7CF;
+  --accent: #FF6A1A;      /* thread orange: CTAs only */
+  --accent-ink: #0B1B3F;
+  --band: #0B1B3F;        /* dark band background */
+  --band-ink: #F6F5F1;
+  --ph-bg: #FFF4D6;       /* placeholder highlight */
+  --ph-line: #C99A1E;
+  --ph-ink: #4A3600;
+  --ok: #15803D;
+
+  --display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --r: 10px;
+  --wrap: 1180px;
+  --gutter: clamp(16px, 4vw, 40px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1226; --surface: #111C36; --ink: #EEF0F5; --muted: #A3ABBF; --line: #24304D;
+    --accent: #FF7A2E; --accent-ink: #0A1226; --band: #060C1B; --band-ink: #EEF0F5;
+    --ph-bg: #3A2F10; --ph-line: #E0B341; --ph-ink: #FBE7A8; --ok: #4ADE80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1226; --surface: #111C36; --ink: #EEF0F5; --muted: #A3ABBF; --line: #24304D;
+  --accent: #FF7A2E; --accent-ink: #0A1226; --band: #060C1B; --band-ink: #EEF0F5;
+  --ph-bg: #3A2F10; --ph-line: #E0B341; --ph-ink: #FBE7A8; --ok: #4ADE80; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+img, svg { max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.5rem, 6vw, 4.6rem); font-weight: 800; }
+h2 { font-size: clamp(1.9rem, 3.6vw, 2.8rem); font-weight: 800; }
+h3 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
+.eyebrow { font: 500 0.78rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 58ch; }
+.section { padding-block: clamp(64px, 9vw, 112px); }
+.section-head { display: grid; gap: 14px; max-width: 720px; margin-bottom: 44px; }
+
+/* running-stitch divider */
+.stitch-rule { height: 2px; border: 0; margin: 0; background-image: repeating-linear-gradient(90deg, var(--line) 0 10px, transparent 10px 16px); }
+
+/* placeholder marker: content the owner still has to supply */
+.ph { background: var(--ph-bg); color: var(--ph-ink); outline: 1.5px dashed var(--ph-line); outline-offset: 1px; border-radius: 4px; padding: 0 5px; font-style: normal; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 24px; border-radius: 999px; font: 600 1rem/1 var(--body); text-decoration: none; border: 2px solid transparent; cursor: pointer; transition: transform .15s ease, background-color .15s ease; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+.btn-ghost:hover { border-color: var(--ink); }
+
+/* header */
+.site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.bar { display: flex; align-items: center; gap: 24px; min-height: 68px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 800 1.35rem/1 var(--display); text-decoration: none; letter-spacing: -0.02em; }
+.logo svg { width: 30px; height: 30px; flex: none; }
+.logo b { color: var(--accent); font-weight: 800; }
+.nav { display: flex; gap: 26px; margin-left: auto; }
+.nav a { text-decoration: none; font-weight: 500; color: var(--muted); }
+.nav a:hover { color: var(--ink); }
+.menu-btn { display: none; margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); width: 44px; height: 44px; font-size: 1.2rem; cursor: pointer; }
+@media (max-width: 900px) {
+  .menu-btn { display: inline-grid; place-items: center; }
+  .bar .btn { display: none; }
+  .nav { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; gap: 0; background: var(--bg); border-bottom: 1px solid var(--line); padding: 8px var(--gutter) 16px; }
+  .nav.open { display: flex; }
+  .nav a { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+}
+
+/* hero */
+.hero { padding-block: clamp(40px, 6vw, 80px) clamp(56px, 7vw, 96px); }
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
+.hero-copy { display: grid; gap: 22px; min-width: 0; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.hero-note { font-size: 0.95rem; color: var(--muted); }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
+
+/* before/after */
+.compare { display: grid; gap: 12px; min-width: 0; }
+.compare-stage { position: relative; aspect-ratio: 1 / 1; width: 100%; max-width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); --pos: 50%; touch-action: pan-y; }
+.compare-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.compare-stage .stitched { clip-path: inset(0 0 0 var(--pos)); }
+.compare-handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 0; border-left: 2px dashed var(--accent); pointer-events: none; }
+.compare-handle::after { content: "⇆"; position: absolute; top: 50%; left: 0; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; box-shadow: 0 2px 10px rgb(0 0 0 / .25); }
+.compare-tag { position: absolute; top: 14px; font: 500 0.72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; padding: 7px 10px; border-radius: 999px; background: rgb(11 27 63 / .82); color: #fff; pointer-events: none; }
+.compare-tag.l { left: 14px; } .compare-tag.r { right: 14px; }
+.compare input[type=range] { width: 100%; accent-color: var(--accent); }
+.spec { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 500 0.8rem/1.4 var(--mono); color: var(--muted); }
+.spec span::before { content: "— "; color: var(--accent); }
+.spec .label { color: var(--ink); }
+.spec .label::before { content: none; }
+
+/* proof bar */
+.proof { background: var(--band); color: var(--band-ink); }
+.proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.proof-item { padding: 26px 22px; display: grid; gap: 4px; border-left: 2px dashed rgb(255 255 255 / .16); }
+.proof-item:first-child { border-left: 0; padding-left: 0; }
+.proof-item strong { font: 700 1.15rem/1.2 var(--display); }
+.proof-item span { font-size: .92rem; opacity: .75; }
+@media (max-width: 900px) { .proof-grid { grid-template-columns: 1fr 1fr; } .proof-item:nth-child(3) { border-left: 0; padding-left: 0; } .proof-item { padding-left: 18px; } }
+@media (max-width: 480px) { .proof-grid { grid-template-columns: 1fr; } .proof-item { border-left: 0; padding: 16px 0; border-top: 2px dashed rgb(255 255 255 / .16); } .proof-item:first-child { border-top: 0; } }
+
+/* services */
+.services { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.svc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 30px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.svc.feature { grid-row: span 2; background: var(--band); color: var(--band-ink); border-color: transparent; }
+.svc.feature .muted { color: color-mix(in srgb, var(--band-ink) 72%, transparent); }
+.svc .muted { color: var(--muted); }
+.svc-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.price { font: 500 .85rem/1 var(--mono); white-space: nowrap; }
+.svc ul { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.svc li { padding-left: 22px; position: relative; }
+.svc li::before { content: ""; position: absolute; left: 0; top: .72em; width: 12px; border-top: 2px dashed var(--accent); }
+.formats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.formats span { font: 500 .75rem/1 var(--mono); padding: 6px 8px; border-radius: 6px; border: 1px dashed currentColor; opacity: .85; }
+.svc a.more { font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.services-side { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (max-width: 820px) { .services { grid-template-columns: 1fr; } .svc.feature { grid-row: auto; } }
+
+/* dedicated digitizer */
+.dedicated-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(32px, 6vw, 72px); align-items: center; }
+.chat { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; font-size: .95rem; min-width: 0; }
+.chat-head { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 800 1rem/1 var(--display); flex: none; }
+.chat-head small { display: block; color: var(--muted); font-size: .8rem; }
+.online { margin-left: auto; font: 500 .72rem/1 var(--mono); color: var(--ok); text-transform: uppercase; letter-spacing: .08em; }
+.msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; }
+.msg.you { justify-self: end; background: var(--band); color: var(--band-ink); border-bottom-right-radius: 4px; }
+.msg.them { background: var(--bg); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.msg code { font-family: var(--mono); font-size: .85em; }
+.chat-note { font-size: .78rem; color: var(--muted); text-align: center; }
+.points { display: grid; gap: 22px; margin-top: 8px; }
+.point { display: grid; grid-template-columns: 28px 1fr; gap: 14px; }
+.point svg { width: 28px; height: 28px; color: var(--accent); }
+.point p { color: var(--muted); }
+@media (max-width: 900px) { .dedicated-grid { grid-template-columns: 1fr; } .dedicated-grid .chat { order: 2; } }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; counter-reset: step; }
+.step { padding: 0 24px 0 0; display: grid; gap: 10px; align-content: start; position: relative; }
+.step-num { font: 500 .8rem/1 var(--mono); color: var(--accent); display: flex; align-items: center; gap: 10px; }
+.step-num::after { content: ""; flex: 1; border-top: 2px dashed var(--line); }
+.step:last-child .step-num::after { border-top-color: transparent; }
+.step p { color: var(--muted); font-size: .97rem; }
+@media (max-width: 900px) { .steps { grid-template-columns: 1fr 1fr; row-gap: 36px; } }
+@media (max-width: 520px) { .steps { grid-template-columns: 1fr; } .step-num::after { display: none; } }
+
+/* placements */
+.placements { display: flex; flex-wrap: wrap; gap: 10px; }
+.placements span { padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-weight: 500; }
+
+/* testimonials */
+.quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.quote { border-top: 2px dashed var(--line); padding-top: 20px; display: grid; gap: 14px; align-content: start; }
+.quote blockquote { margin: 0; font: 500 1.15rem/1.45 var(--display); }
+.quote figcaption { color: var(--muted); font-size: .9rem; }
+@media (max-width: 820px) { .quotes { grid-template-columns: 1fr; } }
+
+/* pricing */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; min-width: 560px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 16px 20px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+th { font: 500 .75rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td small { display: block; color: var(--muted); }
+.pricing-foot { margin-top: 16px; color: var(--muted); font-size: .92rem; }
+
+/* faq */
+.faq { display: grid; max-width: 820px; }
+.faq details { border-bottom: 2px dashed var(--line); }
+.faq summary { cursor: pointer; list-style: none; padding: 20px 40px 20px 0; position: relative; font: 700 1.12rem/1.35 var(--display); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font: 500 1.5rem/1 var(--mono); color: var(--accent); }
+.faq details[open] summary::after { content: "−"; }
+.faq details p { padding: 0 0 20px; color: var(--muted); max-width: 65ch; }
+
+/* quote form */
+.quote-band { background: var(--band); color: var(--band-ink); }
+.quote-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(32px, 6vw, 72px); align-items: start; }
+.quote-band .lede { color: color-mix(in srgb, var(--band-ink) 75%, transparent); }
+.contact-list { display: grid; gap: 12px; margin-top: 28px; font-size: .95rem; }
+.contact-list div { display: grid; gap: 2px; }
+.contact-list dt { font: 500 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; opacity: .7; }
+.contact-list dd { margin: 0; font-weight: 600; user-select: all; }
+form.quote-form { background: var(--surface); color: var(--ink); border-radius: 16px; padding: clamp(20px, 3vw, 32px); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; min-width: 0; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-weight: 600; font-size: .9rem; }
+.field input, .field select, .field textarea { font: inherit; font-size: 1rem; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; min-height: 46px; width: 100%; }
+.field textarea { min-height: 90px; resize: vertical; }
+.drop { border: 2px dashed var(--line); border-radius: 10px; padding: 20px; text-align: center; color: var(--muted); background: var(--bg); position: relative; }
+.drop.over { border-color: var(--accent); }
+.drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop strong { color: var(--ink); }
+.form-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.form-foot small { color: var(--muted); }
+.form-status { grid-column: 1 / -1; padding: 12px 14px; border-radius: 8px; background: var(--ph-bg); color: var(--ph-ink); outline: 1.5px dashed var(--ph-line); font-size: .92rem; }
+@media (max-width: 900px) { .quote-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { form.quote-form { grid-template-columns: 1fr; } }
+
+/* footer */
+.site-footer { padding-block: 48px; font-size: .92rem; color: var(--muted); }
+.foot-grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 28px; }
+.foot-grid h4 { margin: 0 0 10px; font: 500 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--ink); }
+.foot-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.foot-grid a { text-decoration: none; }
+.foot-grid a:hover { color: var(--ink); }
+.legal { margin-top: 36px; padding-top: 20px; border-top: 2px dashed var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+@media (max-width: 820px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="logo" href="#top" aria-label="JetDigitizer home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4 3"/><path d="M9 22 L23 9" stroke="#FF6A1A" stroke-width="3" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="currentColor"/></svg>
+      <span>Jet<b>Digitizer</b></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#services">Services</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#quote">Contact</a>
+    </nav>
+    <a class="btn btn-primary" href="#quote">Get a Free Quote</a>
+    <button class="menu-btn" id="menuBtn" aria-controls="nav" aria-expanded="false" aria-label="Open menu">☰</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Embroidery digitizing · Vector art · Screen printing</span>
+        <h1>Fastest digitizing &amp; vector services, <em>in one go.</em></h1>
+        <p class="lede">Send your logo. Your own dedicated digitizer turns it into a machine-ready file that runs clean the first time, with live support 24/7 if you need a change.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#quote">Get a Free Quote</a>
+          <a class="btn btn-ghost" href="#pricing">See pricing</a>
+        </div>
+        <p class="hero-note">Standard turnaround <em class="ph">[__ hours]</em> · Rush <em class="ph">[__ hours]</em> · Free edits until it stitches right</p>
+      </div>
+
+      <div class="compare">
+        <div class="compare-stage" id="stage" role="img" aria-label="Example: a logo shown as flat artwork on the left and as a stitched embroidery file on the right">
+          <!-- Artwork (flat) -->
+          <svg viewBox="0 0 400 400" aria-hidden="true">
+            <rect width="400" height="400" fill="#FFFFFF"/>
+            <circle cx="200" cy="200" r="150" fill="#0B1B3F"/>
+            <circle cx="200" cy="200" r="132" fill="none" stroke="#F6F5F1" stroke-width="4"/>
+            <path d="M92 250 L160 160 L195 205 L235 140 L308 250 Z" fill="#FF6A1A"/>
+            <path d="M235 140 L252 165 L240 162 L228 172 L220 160 Z" fill="#F6F5F1"/>
+            <rect x="92" y="250" width="216" height="8" fill="#F6F5F1"/>
+            <text x="200" y="300" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="27" fill="#F6F5F1" letter-spacing="3">RIDGELINE</text>
+            <text x="200" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="#F6F5F1" letter-spacing="5">EST. 2019</text>
+          </svg>
+          <!-- Stitched (embroidered look) -->
+          <svg class="stitched" viewBox="0 0 400 400" aria-hidden="true">
+            <defs>
+              <pattern id="twill" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><rect width="8" height="8" fill="#E9E5DA"/><rect width="8" height="3" fill="#DCD6C8"/></pattern>
+              <pattern id="fillNavy" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)"><rect width="5" height="5" fill="#0B1B3F"/><rect width="5" height="1.4" fill="#22345E"/></pattern>
+              <pattern id="satinOrange" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(52)"><rect width="4" height="4" fill="#FF6A1A"/><rect width="4" height="1.3" fill="#C94A0C"/><rect y="2.2" width="4" height=".7" fill="#FF9A5E"/></pattern>
+              <pattern id="satinWhite" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(80)"><rect width="3" height="3" fill="#FAF8F2"/><rect width="3" height="1" fill="#D8D2C2"/></pattern>
+            </defs>
+            <rect width="400" height="400" fill="url(#twill)"/>
+            <circle cx="200" cy="202" r="150" fill="#000" opacity=".12"/>
+            <circle cx="200" cy="200" r="150" fill="url(#fillNavy)"/>
+            <circle cx="200" cy="200" r="150" fill="none" stroke="#0B1B3F" stroke-width="5"/>
+            <circle cx="200" cy="200" r="132" fill="none" stroke="url(#satinWhite)" stroke-width="6"/>
+            <circle cx="200" cy="200" r="142" fill="none" stroke="#7D8BAA" stroke-width="1.2" stroke-dasharray="5 3"/>
+            <path d="M92 250 L160 160 L195 205 L235 140 L308 250 Z" fill="url(#satinOrange)" stroke="#B5410A" stroke-width="2"/>
+            <path d="M235 140 L252 165 L240 162 L228 172 L220 160 Z" fill="url(#satinWhite)"/>
+            <rect x="92" y="250" width="216" height="8" fill="url(#satinWhite)"/>
+            <text x="200" y="300" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="27" fill="url(#satinWhite)" stroke="#B9B2A0" stroke-width=".6" letter-spacing="3">RIDGELINE</text>
+            <text x="200" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="url(#satinWhite)" letter-spacing="5">EST. 2019</text>
+          </svg>
+          <span class="compare-tag l">Your artwork</span>
+          <span class="compare-tag r">Stitched file</span>
+          <div class="compare-handle" aria-hidden="true"></div>
+        </div>
+        <label class="eyebrow" for="compareRange">Drag to compare</label>
+        <input type="range" id="compareRange" min="0" max="100" value="50" aria-label="Compare artwork and stitched file">
+        <div class="spec">
+          <span class="label">Example file</span>
+          <span>7,940 stitches</span><span>3.5″ × 3.5″ left chest</span><span>5 colors</span><span>DST · PES</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section class="proof" aria-label="Why JetDigitizer">
+    <div class="wrap proof-grid">
+      <div class="proof-item"><strong>24/7 live support</strong><span>Real people, any time zone</span></div>
+      <div class="proof-item"><strong>Your own digitizer</strong><span>Same artist on every order</span></div>
+      <div class="proof-item"><strong>Every machine format</strong><span>DST, PES, EXP, JEF, VP3 and more</span></div>
+      <div class="proof-item"><strong>Free edits</strong><span>Until it stitches right</span></div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section" id="services">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Services</span>
+        <h2>Everything between your logo and a finished garment.</h2>
+      </div>
+      <div class="services">
+        <article class="svc feature">
+          <div class="svc-top"><h3>Embroidery Digitizing</h3><span class="price">from <em class="ph">$__</em></span></div>
+          <p class="muted">Hand-digitized by a person, not auto-converted. Pathing, underlay and pull compensation are set for your fabric, so you get fewer thread breaks, no puckering and small text that stays readable.</p>
+          <ul>
+            <li>Left chest, caps, jacket backs and sleeves</li>
+            <li>3D puff, applique and patches</li>
+            <li>Fixes and edits to your existing files</li>
+            <li>Stitch count and color sheet with every file</li>
+          </ul>
+          <div class="formats" aria-label="Supported formats"><span>DST</span><span>PES</span><span>EXP</span><span>JEF</span><span>VP3</span><span>XXX</span><span>HUS</span><span>EMB</span></div>
+          <a class="more" href="#quote">Quote a design →</a>
+        </article>
+        <article class="svc">
+          <div class="svc-top"><h3>Vector Tracing</h3><span class="price">from <em class="ph">$__</em></span></div>
+          <p class="muted">Blurry JPG or a photo of a business card? We redraw it by hand into clean vector art that scales to any size.</p>
+          <div class="formats"><span>AI</span><span>EPS</span><span>PDF</span><span>SVG</span><span>CDR</span></div>
+        </article>
+        <article class="svc">
+          <div class="svc-top"><h3>Screen Printing &amp; Graphic Design</h3><span class="price">from <em class="ph">$__</em></span></div>
+          <p class="muted">Print-ready color separations, halftones and new logo design, prepared for your press and ink count.</p>
+          <a class="more" href="#quote">Start a project →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <hr class="stitch-rule">
+
+  <!-- DEDICATED DIGITIZER -->
+  <section class="section" id="dedicated">
+    <div class="wrap dedicated-grid">
+      <div class="chat" aria-label="Example conversation with a dedicated digitizer">
+        <div class="chat-head">
+          <div class="avatar" aria-hidden="true">D</div>
+          <div><strong>Your digitizer</strong><small>Knows your machines and your customers' logos</small></div>
+          <span class="online">● Online</span>
+        </div>
+        <p class="msg you">Same logo as last week, but 2.5″ for caps please. Need it today.</p>
+        <p class="msg them">On it. I'll redo the underlay for the cap front and send <code>DST</code> + <code>PES</code> with a stitch sheet.</p>
+        <p class="msg them">Done: 5,120 stitches, 4 colors. Want a run sheet in PDF too?</p>
+        <p class="chat-note">Example conversation</p>
+      </div>
+      <div>
+        <div class="section-head" style="margin-bottom: 20px">
+          <span class="eyebrow">Your dedicated digitizer</span>
+          <h2>One person who knows your work.</h2>
+          <p class="lede">At most digitizing shops your order goes into a queue. Here it goes to the same digitizer every time.</p>
+        </div>
+        <div class="points">
+          <div class="point">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16M12 4v16" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="9"/></svg>
+            <div><h3>No re-explaining</h3><p>They remember your machine, your hoop sizes and how you like small text handled.</p></div>
+          </div>
+          <div class="point">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <div><h3>Faster repeat orders</h3><p>Resizes and color changes on logos they've already built come back quicker.</p></div>
+          </div>
+          <div class="point">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>
+            <div><h3>Live help, any hour</h3><p>Questions about a file at 2 a.m. before a production run? Someone answers.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="padding-top: 0">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>From upload to stitch-out in four steps.</h2>
+      </div>
+      <ol class="steps" style="list-style:none; margin:0; padding:0">
+        <li class="step"><span class="step-num">01</span><h3>Upload</h3><p>Send any file (JPG, PNG, PDF or a phone photo) with size and placement.</p></li>
+        <li class="step"><span class="step-num">02</span><h3>We digitize</h3><p>Your digitizer builds the file by hand for your fabric and machine.</p></li>
+        <li class="step"><span class="step-num">03</span><h3>Approve</h3><p>Check the stitch preview and stitch count. Ask for edits for free.</p></li>
+        <li class="step"><span class="step-num">04</span><h3>Download</h3><p>Get every format you need, plus a color sheet, ready to run.</p></li>
+      </ol>
+      <div style="margin-top: 56px; display: grid; gap: 16px">
+        <span class="eyebrow">Placements we digitize</span>
+        <div class="placements"><span>Left chest</span><span>Cap front</span><span>Cap side &amp; back</span><span>Jacket back</span><span>Sleeve</span><span>3D puff</span><span>Applique</span><span>Patches</span><span>Towels &amp; bags</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="stitch-rule">
+
+  <!-- TESTIMONIALS -->
+  <section class="section" id="reviews">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Customers</span>
+        <h2>What shops say after the first run.</h2>
+      </div>
+      <div class="quotes">
+        <figure class="quote" style="margin:0"><blockquote><span class="ph">[Customer testimonial 1: paste a real quote here]</span></blockquote><figcaption class="ph">[Name, Company, City]</figcaption></figure>
+        <figure class="quote" style="margin:0"><blockquote><span class="ph">[Customer testimonial 2]</span></blockquote><figcaption class="ph">[Name, Company, City]</figcaption></figure>
+        <figure class="quote" style="margin:0"><blockquote><span class="ph">[Customer testimonial 3]</span></blockquote><figcaption class="ph">[Name, Company, City]</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="padding-top: 0">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Pricing</span>
+        <h2>Clear prices. No surprises on the invoice.</h2>
+        <p class="lede">You see the price before we start. Edits to your file are always free.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Service</th><th>Price</th><th>Standard</th><th>Rush</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Left chest / cap logo</strong><small>Up to 4″ wide</small></td><td><em class="ph">$__</em></td><td><em class="ph">__ hrs</em></td><td><em class="ph">__ hrs (+$__)</em></td></tr>
+            <tr><td><strong>Jacket back / large design</strong><small>Priced per 1,000 stitches</small></td><td><em class="ph">$__ / 1k stitches</em></td><td><em class="ph">__ hrs</em></td><td><em class="ph">__ hrs (+$__)</em></td></tr>
+            <tr><td><strong>3D puff / applique</strong></td><td><em class="ph">$__</em></td><td><em class="ph">__ hrs</em></td><td><em class="ph">__ hrs (+$__)</em></td></tr>
+            <tr><td><strong>Vector tracing</strong><small>Simple / complex</small></td><td><em class="ph">$__ / $__</em></td><td><em class="ph">__ hrs</em></td><td><em class="ph">__ hrs (+$__)</em></td></tr>
+            <tr><td><strong>Edits to your existing file</strong></td><td><em class="ph">$__</em></td><td><em class="ph">__ hrs</em></td><td>n/a</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="pricing-foot">Volume pricing for shops sending 20+ designs a month. <a href="#quote">Ask for a rate card</a>.</p>
+    </div>
+  </section>
+
+  <hr class="stitch-rule">
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions shops ask before the first order.</h2>
+      </div>
+      <div class="faq">
+        <details><summary>Which machine formats do you deliver?</summary><p>All the common ones, including DST (Tajima), PES (Brother), EXP (Melco), JEF (Janome), VP3 (Husqvarna/Pfaff), XXX, HUS and EMB. Tell us your machine and we'll send the right format.</p></details>
+        <details><summary>How fast is turnaround?</summary><p>Standard orders come back in <em class="ph">[__ hours]</em>. Rush orders come back in <em class="ph">[__ hours]</em>.</p></details>
+        <details><summary>What if the file doesn't stitch right?</summary><p>Send us a photo of the stitch-out. Your digitizer adjusts the file for free until it runs clean on your machine.</p></details>
+        <details><summary>What artwork can I send?</summary><p>Anything you have: JPG, PNG, PDF, AI or even a phone photo. Vector files give the sharpest result, and if you don't have one we can create it.</p></details>
+        <details><summary>How do I pay?</summary><p>You get an invoice when your file is ready. <em class="ph">[Accepted payment methods]</em></p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE FORM -->
+  <section class="section quote-band" id="quote">
+    <div class="wrap quote-grid">
+      <div>
+        <span class="eyebrow" style="color: inherit; opacity: .7">Get a free quote</span>
+        <h2 style="margin-top: 14px">Send your logo. Get a price back fast.</h2>
+        <p class="lede" style="margin-top: 16px">Upload your artwork and tell us where it goes. Your digitizer replies with a price and turnaround before any work starts.</p>
+        <dl class="contact-list">
+          <div><dt>New orders</dt><dd>orders@jetdigitizer.com</dd></div>
+          <div><dt>Sales &amp; volume pricing</dt><dd>sales@jetdigitizer.com</dd></div>
+          <div><dt>General questions</dt><dd>info@jetdigitizer.com</dd></div>
+        </dl>
+      </div>
+
+      <form class="quote-form" id="quoteForm" novalidate>
+        <div class="field full">
+          <span style="font-weight:600; font-size:.9rem">Artwork</span>
+          <div class="drop" id="drop">
+            <input type="file" id="artwork" name="artwork" multiple accept="image/*,.pdf,.ai,.eps,.svg,.cdr" aria-label="Upload artwork">
+            <strong>Drop your logo here</strong> or tap to browse<br><small id="fileList">JPG, PNG, PDF, AI, EPS or SVG</small>
+          </div>
+        </div>
+        <div class="field">
+          <label for="service">Service</label>
+          <select id="service" name="service">
+            <option>Embroidery digitizing</option>
+            <option>Vector tracing</option>
+            <option>Screen printing separations</option>
+            <option>Graphic design</option>
+            <option>Edit an existing file</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="placement">Placement</label>
+          <select id="placement" name="placement">
+            <option>Left chest</option><option>Cap front</option><option>Jacket back</option><option>Sleeve</option><option>Patch</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="size">Size (width × height, inches)</label>
+          <input id="size" name="size" placeholder="3.5 × 2.0">
+        </div>
+        <div class="field">
+          <label for="format">File format</label>
+          <select id="format" name="format">
+            <option>DST</option><option>PES</option><option>EXP</option><option>JEF</option><option>VP3</option><option>Not sure</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="turnaround">Turnaround</label>
+          <select id="turnaround" name="turnaround"><option>Standard</option><option>Rush</option></select>
+        </div>
+        <div class="field">
+          <label for="email">Your email</label>
+          <input id="email" name="email" type="email" placeholder="you@yourshop.com" autocomplete="email">
+        </div>
+        <div class="field full">
+          <label for="notes">Notes (fabric, thread colors, anything else)</label>
+          <textarea id="notes" name="notes" placeholder="Polo shirt, pique knit. Match thread to PMS 021 C."></textarea>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-primary" type="submit">Get My Free Quote</button>
+          <small>No payment needed to get a quote.</small>
+        </div>
+        <p class="form-status" id="formStatus" hidden></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div style="display:grid; gap:10px; align-content:start">
+        <a class="logo" href="#top" style="color: var(--ink)"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4 3"/><path d="M9 22 L23 9" stroke="#FF6A1A" stroke-width="3" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="currentColor"/></svg><span>Jet<b>Digitizer</b></span></a>
+        <p>Fastest digitizing &amp; vector services, in one go.</p>
+        <p class="ph">[Business address]</p>
+      </div>
+      <div><h4>Services</h4><ul><li><a href="#services">Embroidery digitizing</a></li><li><a href="#services">Vector tracing</a></li><li><a href="#services">Screen printing</a></li><li><a href="#services">Graphic design</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="#dedicated">Your digitizer</a></li><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li></ul></div>
+      <div><h4>Contact</h4><ul><li>orders@jetdigitizer.com</li><li>sales@jetdigitizer.com</li><li>info@jetdigitizer.com</li><li>Live support 24/7</li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 JetDigitizer. Operated under ZimalTech L.L.C.</span><span>DST · PES · EXP · JEF · VP3 · AI · EPS · SVG</span></div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // mobile menu
+  var btn = document.getElementById('menuBtn'), nav = document.getElementById('nav');
+  btn.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+    btn.textContent = open ? '✕' : '☰';
+  });
+  nav.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') { nav.classList.remove('open'); btn.setAttribute('aria-expanded', false); btn.textContent = '☰'; }
+  });
+
+  // before/after slider: range input plus direct drag on the image
+  var stage = document.getElementById('stage'), range = document.getElementById('compareRange');
+  function setPos(v) { v = Math.max(0, Math.min(100, v)); stage.style.setProperty('--pos', v + '%'); range.value = v; }
+  range.addEventListener('input', function () { setPos(+range.value); });
+  var dragging = false;
+  function fromEvent(e) { var r = stage.getBoundingClientRect(); setPos((e.clientX - r.left) / r.width * 100); }
+  stage.addEventListener('pointerdown', function (e) { dragging = true; stage.setPointerCapture(e.pointerId); fromEvent(e); });
+  stage.addEventListener('pointermove', function (e) { if (dragging) fromEvent(e); });
+  stage.addEventListener('pointerup', function () { dragging = false; });
+  stage.addEventListener('pointercancel', function () { dragging = false; });
+
+  // file drop
+  var drop = document.getElementById('drop'), file = document.getElementById('artwork'), list = document.getElementById('fileList');
+  ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.remove('over'); }); });
+  file.addEventListener('change', function () {
+    var names = Array.prototype.map.call(file.files, function (f) { return f.name; });
+    list.textContent = names.length ? names.join(', ') : 'JPG, PNG, PDF, AI, EPS or SVG';
+  });
+
+  // quote form: not connected to a backend yet
+  var form = document.getElementById('quoteForm'), status = document.getElementById('formStatus');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('email');
+    if (!email.value || !email.checkValidity()) {
+      status.textContent = 'Enter your email so we can send your quote.';
+      status.hidden = false; email.focus(); return;
+    }
+    status.textContent = 'Preview only: this form is not connected yet. On the live site it will send your artwork and details to orders@jetdigitizer.com.';
+    status.hidden = false;
+  });
+})();
+</script>
+</body>
+</html>
